@@ -4,7 +4,7 @@ struct VLFrag <: Vega.AbstractVegaFragment
 end
 
 function vlfrag(args...; kwargs...)
-    return VLFrag(Any[args...], OrderedDict{String,Any}(string(k)=>convert_nt_to_dict(v, VLFrag) for (k,v) in kwargs))
+    return VLFrag(Any[args...], OrderedDict{String,Any}(string(k)=>Vega.convert_nt_to_dict(v, VLFrag) for (k,v) in kwargs))
 end
 
 fix_shortcut_level_mark(spec_frag) = spec_frag
@@ -66,7 +66,7 @@ function fix_shortcut_level_data(spec_frag::VLFrag)
     else
         if haskey(spec_frag.named, "url")
             spec = copy(spec_frag.named)
-    
+
             if spec["url"] isa AbstractPath
                 as_uri = string(URI(spec["url"]))
                 spec["url"] = Sys.iswindows() ? as_uri[1:5] * as_uri[7:end] : as_uri
@@ -74,7 +74,7 @@ function fix_shortcut_level_data(spec_frag::VLFrag)
                 as_uri = string(spec["url"])
                 spec["url"] = Sys.iswindows() && spec["url"].scheme=="file" ? as_uri[1:5] * as_uri[7:end] : as_uri
             end
-    
+
             return VLFrag([], spec)
         else
             return spec_frag
@@ -177,7 +177,7 @@ function fix_shortcut_level_spec(spec_frag::VLFrag)
                 transform.named["from"].named["data"] = fix_shortcut_level_data(transform.named["from"].named["data"])
             end
         end
-    end    
+    end
 
     if haskey(spec, "data")
         if !isempty(inline_unnamed_data)
@@ -219,7 +219,7 @@ function convert_frag_tree_to_dict(spec::VLFrag)
     spec_as_dict2 = Vega.walk_dict(spec_as_dict, "root") do p, parent
         if p[1]=="typ"
             Base.depwarn("`typ` in VegaLite.jl specs is deprecated, use `type` instead.", :vlplot)
-	
+
             return "type"=>p[2]
         else
             return p
